@@ -1,0 +1,27 @@
+﻿@model InspimoMediatorDesignPattern.MediatorPattern.Results.GetUpdateProductByIDQueryResult
+@{
+    Layout = null;
+}
+
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container">
+    <br /><br />
+    <form method="post">
+        <input type="hidden" asp-for="ProductID" />
+        <br />
+        <label>Ürün Adı</label>
+        <input type="text" class="form form-control" asp-for="ProductName" />
+        <br />
+        <label>Stok Sayısı</label>
+        <input type="text" class="form form-control" asp-for="ProductStock" />
+        <br />
+        <label>Ürün Fiyatı</label>
+        <input type="text" class="form form-control" asp-for="ProductPrice" />
+        <br />
+        <label>Ürün Kategori</label>
+        <input type="text" class="form form-control" asp-for="ProductCategory" />
+        <br />
+        <button class="btn btn-success">Ürünü Güncelle</button>
+    </form>
+</div>

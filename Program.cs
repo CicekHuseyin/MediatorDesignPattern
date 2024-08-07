@@ -1,6 +1,12 @@
+using InspimoMediatorDesignPattern.DAL;
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<Context>();
+//Constructar larýn kaydýný bu kod yapýyor. Handler larý tek tek tanýmlamama gerek kalmadý.
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

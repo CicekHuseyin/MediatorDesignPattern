@@ -1,0 +1,70 @@
+Yazma: Insert,Update,Delete
+Okuma:Select,Where,GetByID
+
+Result:Listelenecek prop
+Handlers: Crud işlmeleri
+Queries:Id gibi parametreleri
+Commands:Ekleme,Silme,Güncelleme işlemlerine ait propları tutuyor.
+
+
+CQRS Design Pattern CRUD Aşamaları(Asp.net core web app projesi içinde)
+
+Projeye paketleri yükle: Sql server, asp.net core,tools,design,MediatR
+DAL klasörü aç. İçine class oluştur entity gir.
+public class Product
+    {
+        public int ProductID { get; set; }
+        public string ProductName { get; set; }
+        public string ProductBrand { get; set; }
+        public int ProductStock { get; set; }
+        public decimal ProductPrice { get; set; }
+        public bool ProductStatus { get; set; }
+    }
+Dal içine Context i gir. Entity i Dbset ile çek.
+ public class Context : DbContext
+    {
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=DESKTOP-KR485FT\\SQLEXPRESS; initial Catalog=CQRSDb; integrated security=true");
+        }
+
+        public DbSet<Product> Products { get; set; }
+    }
+migration yap.
+Projede CQRSPattern klasörü oluştur. İçine 4 klasör ekle. Döngü bu klasörler içinde olacak.
+Commends,Handlers,Queries,Results
+
+1-Verileri Listeleme
+-Results klaösrüne Listeleyeceğin propları tanımla.(GetAllProductQueryResult.cs)
+-Queries klasörüne Results da oluşturduğun Entity IRequest interface ile istek at(GetAllProductQuery.cs)
+public class GetAllProductQuery : IRequest<List<GetAllProductQueryResult>>
+    {
+
+    }
+-Handlers klasörüne Results da girdiğin verileri Listeleyecek bir Fonksiyon yaz Handle Fonksiyonu(GetAllProductQueryHandler.cs)
+-Controller oluştur. Oluşturduğun endpoint e Query de istek yazdığın metoda istek at.(ProductController/Index)
+-View oluştur. Model olarak REsults klasöründe ki class ı GetAllProductQueryResult kullan.
+-Controller da Handler ları constructır ile çağırmak yerine onları otomatik bu şekilde çağırıyoruz.(Program.cs)
+builder.Services.AddDbContext<Context>();
+//Constructar ların kaydını bu kod yapıyor. Handler ları tek tek tanımlamama gerek kalmadı.
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+2-Veri Ekleme 
+-Commands klasörüne eklemek istediğim verileri yazdım.(CreateProdutCommand.cs)
+-Handlers klasörün de Ekleme işlemini yapmadan önce Commands deki class ı IRequestHandler interface ile çektim. ve ekleme kodunu yazdım.(CreateProductCommandHandler.cs)
+-Controller da ise AddProduct fonksiyonuna _mediator constructer ını kullanarak Handler da yazdığım fonksiyona istek attım.((ProductController/AddProduct)
+-View oluştur. Model olarak Commands klasöründe ki class ı CreateProdutCommand kullan.
+
+3-Silme İşlemi
+-Commands klasörüne bir id property si ekliyoruz. Silerken burada ki id yi parametre olarak alacaz.(RemoveProductCommand.cs)
+-Handlers klasörün de Silme işlemini yapmadan önce Commands deki class ı IRequestHandler interface ile çektim. ve silme kodunu yazdım.(RemoveProductCommandHandler.cs)
+-Controller da ise DeleteProduct fonksiyonuna _mediator constructer ını kullanarak Handler da yazdığım fonksiyona istek attım.(ProductController/DeleteProduct)
+-Index de oluşturduğum view e td içine a etiketi ekleyerek href de Controller daki endpointimi çağırdım.
+                <td><a href="/Product/DeleteProduct/@item.ProductID" class="btn btn-danger">Sil</a></td>
+4-Güncelleme İşlemi Verileri gösterme (Get Endpointi için)
+-Results klasörüne güncellemede göstermek istediğin verileri tanımla.(GetUpdateProductByIDQueryResult.cs)
+-Queries klasörüne ıd prop ekle ve IRequest interface ile Results da tanımladığın class al.(GetProductUpdateByIDQuery.cs)
+-Handlers klasörün de Güncelleme işlemini yapmadan önce Results deki ve Queries deki classları IRequestHandler interface ile çektim. ve gösterilecek verilerin kodunu yazdım.(GetProductUpdateByIDQueryHandler.cs)
+-Controller da HttpGet metodu ile id yi çektim. id ye göre verileri getirdim.(ProductController/UpdateProduct)
+-Yeni bir view oluşturdum. View de Results da tanımladığım class (GetUpdateProductByIDQueryResult)ı model olarak kullandım.
+4.1-Güncelleme işlemi (Post Endpointi için)
